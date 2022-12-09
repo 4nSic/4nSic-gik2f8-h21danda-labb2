@@ -18,7 +18,7 @@ app.use(express.json())
 app.get('/tasks', async (req, res) => {
     try{
         const task = await fs.readFile("./tasks.json");
-        res.status(425).send(JSON.parse(task));
+        res.status(200).send(JSON.parse(task));
     }
     catch(error)
     {
@@ -50,6 +50,32 @@ app.post("/tasks", async(req,res) =>{
     catch (error) {
         res.status(500).send({error: error.stack});
     }
+});
+
+app.patch("/tasks/:id", async(req, res) =>{
+    
+    const id = req.params.id;
+    try{
+        const listBuffer = await fs.readFile("./tasks.json");
+        const currentTasks = JSON.parse(listBuffer);
+
+        currentTasks.forEach(task => {
+            if(task.id == id && task.completed == false){
+                task.completed = true;
+            } 
+            else if(task.id == id && task.completed == true){
+                task.completed = false;
+            }
+        });
+        
+        await fs.writeFile('./tasks.json',JSON.stringify(currentTasks));
+    }
+    catch(error) {
+        res.status(500).send({error: error.stack});
+    }
+
+    res.send({messege:`Uppgiften med id: ${id} uppdaterades`});
+
 });
 
 app.delete("/tasks/:id", async(req, res) =>{
