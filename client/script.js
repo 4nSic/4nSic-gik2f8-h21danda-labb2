@@ -65,12 +65,14 @@ function onSubmit(e){
     e.preventDefault();
     
     if (titleValid && descriptionValid && dueDateValid) {
-        saveTask();   
+        saveTask(); 
+        titleValid=false;
+        descriptionValid=false;
+        dueDateValid=false  
     }
     else{
         alert("Fyll i fälten på ett korrekt sätt!");
     }
-
 }
 
 function saveTask(){
@@ -100,27 +102,40 @@ function renderList(){
 
             tasks.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
 
-            
+            tasks.sort((a, b) => new Date(a.completed) - new Date(b.completed));
 
-            tasks.forEach(task => {
-                if(task.completed){
-                    tasks.push(tasks.splice(tasks.indexOf(task), 1)[0]);
-                }
-            });
-
-            tasks.forEach(task => {
-                todoListElement.insertAdjacentHTML("beforeend", renderTask(task));             
-            });
+            tasks.forEach(task => {todoListElement.insertAdjacentHTML("beforeend", renderTask(task));});
         }
-    } );
+    });
 }
 
 function renderTask({id, title, description, dueDate, completed}){
+    const now = new Date();
+    let test = now.getFullYear() - new Date(dueDate).getFullYear();
+    if (test >=0)
+    {
+        test = now.getMonth()- new Date(dueDate).getMonth(); 
+
+        if(test >=0)
+        {
+            test = now.getDate() - new Date(dueDate).getDate()
+            console.log(test)
+        }
+    } 
     let html =`
-    <li id="${id}" class="select-none mt-2 py-2 border-b border-amber-300" `; completed && (html += `style="background-color: hsla(105, 100%, 34%, 0.62)"`); html+= `>
+    <li  class="select-none mt-2 py-2 border-b border-amber-300 `; if (test === 0 && completed != true ){html+=`animate-pulse `};
+    if (completed != true && test > 0)
+    {
+        html+= `bg-rose-600 `  
+    }
+    else if (completed)
+    {
+        html += `bg-lime-400 `;
+    }
+    html+= `">
         <div class="flex items-center">
             <div flex-1 class="inline-block text-xs text-amber-900">
-                <input type="checkbox" name="${id}" onclick="checkboxKlickHandler(event)"`; 
+                <input type="checkbox" value="${id}" onclick="checkboxKlickHandler(event)"`; 
                 completed && (html += `checked`);
                 html+= ` ">
                 <label for="${id}" class="mt-2 text-xs italic">Klar</label>
@@ -137,7 +152,7 @@ function renderTask({id, title, description, dueDate, completed}){
     html+=`
     </li>
     `;    
-
+    
     return html;
 }
 
@@ -147,10 +162,7 @@ function deleteTask(id){
 
 function checkboxKlickHandler(e){
 
-    theListElement = document.getElementById(`${e.target.name}`);
-
-    api.update(e.target.name).then((result) => renderList());
-
+    api.update(e.target.value).then((result) => renderList());
 
 }
 
