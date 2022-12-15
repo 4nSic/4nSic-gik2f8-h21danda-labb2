@@ -21,7 +21,7 @@ function validateField(field){
 
     switch(name){
         case "title":{
-            if(value.length < 2){
+            if(value.length < 1){
                 validationMessage ="Fältet 'Title' måste innehålla minst två tcken";              
             }
             else if(value.length > 100){
